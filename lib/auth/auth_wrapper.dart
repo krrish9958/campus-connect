@@ -1,63 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 
-import '../providers/student_provider.dart';
+import '../services/user_role_service.dart';
 import '../student/student_dashboard.dart';
 import '../teacher/teacher_dashboard.dart';
 import '../admin/admin_dashboard.dart';
 import 'login_screen.dart';
 
-class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
+class AuthWrapper extends StatelessWidget {
+  AuthWrapper({super.key});
 
-  @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
-
-class _AuthWrapperState extends State<AuthWrapper> {
-  bool _loaded = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!_loaded) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        context.read<StudentProvider>().loadStudent();
-      }
-      _loaded = true;
-    }
-  }
+  final UserRoleService _roleService = UserRoleService();
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return const LoginScreen();
-    }
-
-    return Consumer<StudentProvider>(
-      builder: (context, studentProvider, _) {
-        if (studentProvider.isLoading) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final role = studentProvider.student?.role;
-
-        if (role == 'student') {
-          return const StudentDashboard();
-        } else if (role == 'teacher') {
-          return const TeacherDashboard();
-        } else if (role == 'admin') {
-          return const AdminDashboard();
-        } else {
-          return const Scaffold(body: Center(child: Text("Unknown role")));
+        if (!snapshot.hasData) {
+          return const LoginScreen();
         }
+
+        // 🔥 User logged in → fetch role
+        return FutureBuilder<String?>(
+          future: _roleService.getUserRole(),
+          builder: (context, roleSnapshot) {
+            if (roleSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final role = roleSnapshot.data;
+
+            switch (role) {
+              case 'student':
+                return const StudentDashboard();
+              case 'teacher':
+                return const TeacherDashboard();
+              case 'admin':
+                return const AdminDashboard();
+              default:
+                return const Scaffold(
+                  body: Center(child: Text('Unknown role')),
+                );
+            }
+          },
+        );
       },
     );
   }

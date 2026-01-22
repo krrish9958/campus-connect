@@ -24,4 +24,25 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> signup(String email, String password) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      await _authService.signup(email: email, password: password);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      errorMessage = e.message;
+      debugPrint("FIREBASE SIGNUP ERROR: ${e.code} - ${e.message}");
+      return false;
+    } catch (e) {
+      errorMessage = e.toString();
+      debugPrint("UNKNOWN SIGNUP ERROR: $e");
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }

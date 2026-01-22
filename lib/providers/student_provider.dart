@@ -19,4 +19,22 @@ class StudentProvider extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
+
+  Future<void> updateStudentProfile({
+    required String name,
+    required String rollNo,
+    required String branch,
+    required int year,
+  }) async {
+    await _service.updateStudent(
+      name: name,
+      rollNo: rollNo,
+      branch: branch,
+      year: year,
+    );
+
+    // Reload updated student
+    student = await _service.getOrCreateStudent();
+    notifyListeners();
+  }
 }
