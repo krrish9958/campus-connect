@@ -27,7 +27,7 @@ class _EditStudentProfileScreenState extends State<EditStudentProfileScreen> {
 
       if (student != null) {
         nameCtrl.text = student.name;
-        rollCtrl.text = student.rollNo;
+
         branchCtrl.text = student.branch;
         yearCtrl.text = student.year.toString();
       }

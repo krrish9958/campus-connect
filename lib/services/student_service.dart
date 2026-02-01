@@ -15,11 +15,10 @@ class StudentService {
       final student = StudentModel(
         uid: user.uid,
         name: 'New Student',
-        rollNo: 'Not Assigned',
+        rollNo: '000000',
         branch: 'CSE',
         year: 1,
         email: user.email!,
-        role: 'student',
       );
 
       await docRef.set(student.toMap());
@@ -55,5 +54,24 @@ class StudentService {
     return snapshot.docs
         .map((doc) => StudentModel.fromMap(doc.data(), doc.id))
         .toList();
+  }
+
+  // 🔍 FETCH SINGLE STUDENT (for Teacher/Admin)
+  Future<StudentModel?> getStudentById(String uid) async {
+    final doc = await _db.collection('students').doc(uid).get();
+
+    if (!doc.exists) return null;
+
+    return StudentModel.fromMap(doc.data()!, doc.id);
+  }
+
+  Future<void> assignTeacher({
+    required String studentId,
+    required String teacherId,
+  }) async {
+    await FirebaseFirestore.instance
+        .collection('students')
+        .doc(studentId)
+        .update({'assignedTeacherId': teacherId});
   }
 }

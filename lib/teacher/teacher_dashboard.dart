@@ -1,3 +1,6 @@
+import 'package:campus_connect/teacher/attendance_history_screen.dart';
+import 'package:campus_connect/teacher/mark_attendance_screen.dart';
+import 'package:campus_connect/teacher/upload_notes_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'student_list_screen.dart';
@@ -35,12 +38,11 @@ class TeacherDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // 🔥 REAL FEATURE
             Card(
               child: ListTile(
                 leading: const Icon(Icons.people),
-                title: const Text("View Students"),
-                subtitle: const Text("See all students in your class"),
+                title: const Text("My Students"),
+                subtitle: const Text("Students assigned to you"),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -52,19 +54,44 @@ class TeacherDashboard extends StatelessWidget {
               ),
             ),
 
-            // Placeholders
-            const Card(
+            Card(
               child: ListTile(
-                leading: Icon(Icons.check_circle),
-                title: Text("Mark Attendance"),
-                subtitle: Text("Mark daily attendance"),
+                leading: const Icon(Icons.check_circle),
+                title: const Text("Mark Attendance"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MarkAttendanceScreen()),
+                  );
+                },
               ),
             ),
-            const Card(
+            Card(
               child: ListTile(
-                leading: Icon(Icons.upload_file),
-                title: Text("Upload Notes"),
-                subtitle: Text("Share study materials"),
+                leading: const Icon(Icons.history),
+                title: const Text("Attendance History"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AttendanceHistoryScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.upload_file),
+                title: const Text("Upload Notes"),
+                subtitle: const Text("Share study materials"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UploadNotesScreen()),
+                  );
+                },
               ),
             ),
           ],

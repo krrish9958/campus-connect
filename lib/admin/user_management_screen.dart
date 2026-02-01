@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -37,7 +38,7 @@ class UserManagementScreen extends StatelessWidget {
                   subtitle: Text("Role: $role"),
                   trailing: const Icon(Icons.edit),
                   onTap: () {
-                    _showRoleDialog(context, doc.id, role);
+                    _showRoleDialog(context, doc.id, email, role);
                   },
                 ),
               );
@@ -48,7 +49,12 @@ class UserManagementScreen extends StatelessWidget {
     );
   }
 
-  void _showRoleDialog(BuildContext context, String uid, String currentRole) {
+  void _showRoleDialog(
+    BuildContext context,
+    String uid,
+    String email,
+    String currentRole,
+  ) {
     String selectedRole = currentRole;
 
     showDialog(
@@ -77,11 +83,27 @@ class UserManagementScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () async {
+                final admin = FirebaseAuth.instance.currentUser!;
+
+                final oldRole = currentRole;
+
                 await FirebaseFirestore.instance
                     .collection('users')
                     .doc(uid)
                     .update({'role': selectedRole});
 
+                // 🔥 WRITE AUDIT LOG
+                await FirebaseFirestore.instance.collection('audit_logs').add({
+                  'action': 'CHANGE_ROLE',
+                  'targetUserId': uid,
+                  'targetEmail': email,
+                  'oldRole': oldRole,
+                  'newRole': selectedRole,
+                  'changedBy': admin.uid,
+                  'changedByEmail': admin.email,
+                  'timestamp': FieldValue.serverTimestamp(),
+                });
+                if (!context.mounted) return;
                 Navigator.pop(context);
               },
               child: const Text("Save"),
